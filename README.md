@@ -17,7 +17,18 @@ for block comments, then we can put in our `.vimrc` file the lines:
     vmap <M-c> :call Timlcomment_toggle_block_comment_visual()
 
 
-# Configuration
+## Install
+
+Using [pathogen](https://github.com/tpope/vim-pathogen), you can go in your
+bundle directory (e.g. `~/.vim/bundle` in UNIX) and run
+
+    git clone git@github.com:melrief/timlcomment.git
+
+Please note that this project requires [timl](https://github.com/tpope/timl) to
+work.
+
+
+## Configuration
 
 Timlcomment comments lines of code based on four variables:
 
@@ -33,3 +44,16 @@ Timlcomment comments lines of code based on four variables:
 For many file types, those variables are automatically set by the plugin. When
 a variable is not set, the plugin will ask for an input to the user and will use
 the given input for the whole session.
+
+
+## License
+
+Copyright © Mario Pastorelli.
+
+The use and distribution terms for this software are covered by the [Eclipse
+Public License 1.0](http://opensource.org/licenses/eclipse-1.0.php), which can
+be found in the file epl-v10.html at the root of this distribution.
+
+By using this software in any fashion, you are agreeing to be bound by the
+terms of this license.  You must not remove this notice, or any other, from
+this software.
