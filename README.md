@@ -20,7 +20,7 @@ for block comments, then we can put in our `.vimrc` file the lines:
 ## Install
 
 Using [pathogen](https://github.com/tpope/vim-pathogen), you can go in your
-bundle directory (e.g. `~/.vim/bundle` in UNIX) and run
+bundle directory (e.g. `~/.vim/bundle` in UNIX) and run:
 
     git clone git@github.com:melrief/timlcomment.git
 
