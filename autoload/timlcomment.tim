@@ -1,0 +1,105 @@
+(ns timlcomment
+  (:refer-timl)
+  )
+
+(defn escape
+  [s]
+  ())
+
+
+(defn spaces?
+  [s]
+  (or (= "" s) (every? (fn [c] (= \space c)) s)))
+
+(defn re-match? [re s] (>= (#*match s re) 0))
+
+(defn re-escape [s] (#*escape s "^$~*&"))
+
+(defn modline [f i] (#*setline i (f (#*getline i))))
+
+(defn delete-first [l cs] (replace l (str "^\\(\\s*\\)" (re-escape cs)) "\\1"))
+(defn delete-last  [l cs] (replace l (str (re-escape cs) "\\(\\s*\\)$") "\\1"))
+
+(defn block-commented?
+  ; if the selected block, from line si to line ei, is commented
+  [ss es si ei]
+  (and
+    (re-match? (str "^\\s*" (re-escape ss)) (#*getline si))
+    (re-match? (str (re-escape es) "\\s*$") (#*getline ei))))
+
+(defn line-commented? [s i] (re-match? (str "\\s*" (re-escape s)) (#*getline i)))
+
+(defn all-lines-commented? [s r] (every? (fn [i] (line-commented? s i)) r))
+
+(defn get-comment-str
+  ; retrieve the comment string from b: if it is defined, else
+  ; asks the user to specify one
+  [k]
+  (if (contains? b: k)
+    (get b: k)
+    (let [comment-str (#*input (str "Insert a val for b:" k " for this file: "))]
+      (if (= "" comment-str)
+        (throw "The comment string cannot be the empty string")
+        (do
+          ; TODO: use set!
+          (execute (str "let b:" k "='" comment-str "'"))
+          comment-str)))))
+
+(defn linesrange
+  [range?]
+  (if range?
+    (range (#*line "'<") (+ 1 (#*line "'>")))
+    [(#*line ".")]))
+
+(defn inline-comment
+  [range?]
+  (let [r  (linesrange range?)
+        cs (get-comment-str "timlcomment_inlinecomment")
+        f  (if (all-lines-commented? cs r) 
+             (fn [l] (delete-first l cs))
+             (fn [l] (str cs l)))]
+    (doall (map (fn [i] (modline (fn [l] (f l)) i)) r))))
+
+(defn block-comment
+  [range?]
+  (let [r  (linesrange range?)
+        si (first r)
+        ei (last r)
+        ss (get-comment-str "timlcomment_blockcomment_start")
+        ms (get-comment-str "timlcomment_blockcomment_middle")
+        es (get-comment-str "timlcomment_blockcomment_end")]
+    (if (block-commented? ss es si ei)
+      (do
+        ; uncomment all the lines except the first and the last one
+        (if (not (= "" ms))
+          (doall
+            (map
+              (fn [i] (modline (fn [l] (delete-first l ms)) i))
+              (take (- (length r) 2) (drop 1 r)))
+            )
+          )
+        ; remove or uncomment the last line
+        (let [l (delete-last (#*getline ei) es)]
+          ; (prn l (spaces? l))
+          (if (spaces? l)
+            (execute (str ":" ei "d"))
+            (#*setline ei l)
+            )
+         )
+        ; remove or uncomment the first line
+        (let [l (delete-first (#*getline si) ss)]
+          ; (prn l)
+          (if (spaces? l)
+            (execute (str ":" si "d"))
+            (#*setline si l)
+            )
+          )
+        ) 
+      (do
+        ; lines commented
+        (doall
+          (map (fn [i] (modline (fn [l] (str ms l)) i) i) r))
+        ; end of the comment
+        (#*append ei es)
+        ; start of the comment
+        (#*append (- si 1) ss)))))
