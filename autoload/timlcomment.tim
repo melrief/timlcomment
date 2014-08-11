@@ -2,11 +2,6 @@
   (:refer-timl)
   )
 
-(defn escape
-  [s]
-  ())
-
-
 (defn spaces?
   [s]
   (or (= "" s) (every? (fn [c] (= \space c)) s)))
